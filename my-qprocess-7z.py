@@ -22,7 +22,7 @@ STATES = {
 
 # progress_re = re.compile(r"Total complete: (\d+)%")
 progress_re = re.compile(r"(\d{1,3})%")
-filename_re = re.compile(r"(\d+) ([A-Z]) (.+)$")
+filename_re = re.compile(r"(\d+) ([A-Z+]) (.+)$")
 
 
 def simple_percent_parser(output):
