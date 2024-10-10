@@ -21,13 +21,11 @@
 import sys
 
 # The following libs must be installed with pip
-from icecream import ic
-# Disable debugging
-ic.enable()
+
 # Local modules
 from qverbose import verbose, warning, error
 
-# PyQt6
+# PyQt6 must be installed with pip
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QAction, QCloseEvent
 from PyQt6.QtWidgets import (
@@ -64,6 +62,8 @@ class MainWindow(QMainWindow):
         self.text.setReadOnly(True)
         layout.addWidget(self.text)
 
+        verbose.set_widget(self.text)
+
         self.progress = QProgressBar()
         self.progress.setValue(0)
         layout.addWidget(self.progress)
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
 
         menu_options = menu.addMenu("&Options")
 
-        menu_verbose = QAction("Verbose", self, checkable=True)
+        menu_verbose = QAction("Verbose", self, checkable=True, checked=verbose.enabled)
         menu_verbose.triggered.connect(self.toggle_verbose)
         menu_options.addAction(menu_verbose)
         menu_debug = QAction("Debug", self, checkable=True)
@@ -109,10 +109,12 @@ class MainWindow(QMainWindow):
         # Status bar
         self.statusBar().setEnabled(True)
 
+        verbose("READY.")
+
 
     # Catch closeEvent
     def closeEvent(self, event: QCloseEvent):
-        ic(event)
+        warning("quit?")
         if self.yes_no_dialog("Really quit?"):
             event.accept()
         else:
@@ -122,22 +124,20 @@ class MainWindow(QMainWindow):
 
     # Handler for buttons and menu items
     def click_button(self):
-        ic("click_button")
-        self.print_text("click_button:", "TEST")
-        self.print_status("Button clicked:", f"from {self}")
+        verbose("button clicked")
 
 
     def open_file(self):
         # Open a file dialog to select a text file
         filename, _ = QFileDialog.getOpenFileName(self, 'Open File', '.', 'Text Files (*.txt)')
         if filename:
-            self.print_text(f"open {filename}")
+            verbose(f"open {filename}")
 
     def select_dir(self):
         directory = QFileDialog.getExistingDirectory(self, 'Select Destination Directory')
 
         if directory:
-            self.print_text(f"select dir {directory}")
+            verbose(f"select dir {directory}")
 
 
     def toggle_verbose(self):
@@ -176,6 +176,9 @@ class MainWindow(QMainWindow):
 
 
 def main():
+    verbose.set_prog(NAME)
+    verbose.enable()
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
