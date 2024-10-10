@@ -25,7 +25,7 @@ from icecream import ic
 # Disable debugging
 ic.enable()
 # Local modules
-# from verbose import verbose, warning, error
+from qverbose import verbose, warning, error
 
 # PyQt6
 from PyQt6.QtCore    import Qt
