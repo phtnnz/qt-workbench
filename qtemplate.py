@@ -137,12 +137,13 @@ class MainWindow(QMainWindow):
 
 
     def toggle_verbose(self):
-        verbose = self.sender().isChecked()
-        self.print_status("Verbose", "enabled" if verbose else "disabled")
+        option_v = self.sender().isChecked()
+        self.print_status("Verbose", "enabled" if option_v else "disabled")
+        verbose.enable(option_v)
 
     def toggle_debug(self):
-        debug = self.sender().isChecked()
-        self.print_status("Debug", "enabled" if debug else "disabled")
+        option_d = self.sender().isChecked()
+        self.print_status("Debug", "enabled" if option_d else "disabled")
 
 
     # Helper methods
