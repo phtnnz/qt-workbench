@@ -38,7 +38,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
-    QFileDialog
+    QFileDialog,
+    QMessageBox
 )
 
 
@@ -112,8 +113,11 @@ class MainWindow(QMainWindow):
     # Catch closeEvent
     def closeEvent(self, event: QCloseEvent):
         ic(event)
-        # event.ignore()
-        event.accept()
+        if self.yes_no_dialog("Really quit?"):
+            event.accept()
+        else:
+            event.ignore()
+            self.print_status("Quit cancelled.")
 
 
     # Handler for buttons and menu items
@@ -144,6 +148,22 @@ class MainWindow(QMainWindow):
     def toggle_debug(self):
         option_d = self.sender().isChecked()
         self.print_status("Debug", "enabled" if option_d else "disabled")
+
+
+    # Dialogs
+    def yes_no_dialog(self, question: str):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle(f"{NAME}")
+        dlg.setText(question)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No
+        )
+        dlg.setIcon(QMessageBox.Icon.Question)
+        button = dlg.exec()
+        # Look up the button enum entry for the result.
+        button = QMessageBox.StandardButton(button)
+        return button == QMessageBox.StandardButton.Yes
 
 
     # Helper methods
