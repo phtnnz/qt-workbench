@@ -17,7 +17,7 @@
 
 # ChangeLog
 # Version 0.0 / 2024-10-12
-#       Text calendar widgets
+#       Test calendar widgets
 
 import sys
 
