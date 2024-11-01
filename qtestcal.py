@@ -30,7 +30,7 @@ from qverbose import verbose, warning, error
 
 # PyQt6 must be installed with pip
 from PyQt6.QtCore    import QProcess, QDate, Qt, pyqtSlot, QTimer
-from PyQt6.QtGui     import QAction, QCloseEvent
+from PyQt6.QtGui     import QAction, QActionGroup, QCloseEvent
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -184,6 +184,16 @@ class MainWindow(QMainWindow):
         menu_debug = QAction("Debug", self, checkable=True)
         menu_debug.triggered.connect(self.toggle_debug)
         menu_options.addAction(menu_debug)
+        menu_options.addSeparator()
+
+        settings_group = QActionGroup(menu_options)
+        settings_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.Exclusive)
+        a_1 = settings_group.addAction("abc")
+        a_1.setCheckable(True)
+        a_1.setChecked(True)
+        a_2 = settings_group.addAction("def")
+        a_2.setCheckable(True)
+        menu_options.addActions([a_1, a_2])
 
         # Status bar
         self.statusBar().setEnabled(True)
