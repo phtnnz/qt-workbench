@@ -35,14 +35,20 @@ from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
     QPlainTextEdit,
+    QLineEdit,
     QProgressBar,
     QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
     QWidget,
     QFileDialog,
     QMessageBox,
     QCalendarWidget,
-    QDateEdit
+    QDateEdit,
+    QLabel,
+    QCheckBox,
+    QComboBox
 )
 
 
@@ -79,35 +85,66 @@ class MainWindow(QMainWindow):
 
         # Central widget
         layout = QVBoxLayout()
+        
+        # Calendar to select date, default currentDate()
+        self.date = QCalendarWidget()
+        self.date.setGridVisible(True)
+        self.date.clicked[QDate].connect(self.show_date)
+        self.date.setSelectedDate(QDate.currentDate())
+        self.date.setFocus()
+        layout.addWidget(self.date)
 
+        # Subdirectory and target selector
+        grid = QGridLayout()
+        enable_subdir = QCheckBox()
+        enable_subdir.stateChanged.connect(self.enable_subdir_changed)
+        grid.addWidget(enable_subdir, 0, 0)
+        grid.addWidget(QLabel("Subdirectory"), 0, 1)
+        self.subdir = QComboBox()
+        self.subdir.addItems(["_asteroids", "_vars"])
+        self.subdir.setEditable(True)
+        self.subdir.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
+        self.subdir.currentIndexChanged.connect(self.subdir_changed)
+        self.subdir.setEnabled(False)
+        grid.addWidget(self.subdir, 0, 2)
+        self.date_label = QLabel(f"_{self.date.selectedDate().toString(Qt.DateFormat.ISODate)}")
+        self.date_label.setEnabled(False)
+        grid.addWidget(self.date_label, 0, 3)
+        enable_target = QCheckBox()
+        enable_target.stateChanged.connect(self.enable_target_changed)
+        grid.addWidget(enable_target, 1, 0)
+        grid.addWidget(QLabel("Target(s)"), 1, 1)
+        self.target = QLineEdit()
+        self.target.setEnabled(False)
+        grid.addWidget(self.target, 1, 2)
+        grid.addWidget(QLabel("Comma-separated list of targets"), 2, 2)
+        layout.addLayout(grid)
+
+        # Buttons to start the action
+        run_last = QPushButton("Zip all data for selected date")
+        run_last.clicked.connect(self.click_run_last)
+        layout.addWidget(run_last)
+        run_ready = QPushButton("Wait for and zip ready data")
+        run_ready.clicked.connect(self.click_run_ready)
+        layout.addWidget(run_ready)
+
+        # TextEdit for log output, used also by verbose()
+        layout.addWidget(QLabel("Log:"))
         self.text = QPlainTextEdit()
         self.text.setReadOnly(True)
         layout.addWidget(self.text)
-
         verbose.set_widget(self.text)
 
         self.progress = QProgressBar()
         self.progress.setValue(0)
         layout.addWidget(self.progress)
 
-        btn_run = QPushButton("Button")
-        btn_run.clicked.connect(self.click_button)
-        layout.addWidget(btn_run)
-
-        # Testing widgets
-        cal = QCalendarWidget()
-        cal.setGridVisible(True)
-        cal.clicked[QDate].connect(self.show_date)
-        cal.setSelectedDate(QDate(2024, 10, 1))
-        cal.setFocus()
-        layout.addWidget(cal)
-
         # edit = QDateEdit()
         # edit.setDate(QDate(2024, 1, 1))
         # edit.setCalendarPopup(True)
-        edit = DateEdit()
-        edit.setDate(QDate(2024, 1, 1))
-        layout.addWidget(edit)
+        # edit = DateEdit()
+        # edit.setDate(QDate(2024, 1, 1))
+        # layout.addWidget(edit)
 
         self.timer = QTimer()
         self.timer.setInterval(10000) # 10s
@@ -165,8 +202,32 @@ class MainWindow(QMainWindow):
 
 
     # Handler for buttons and menu items
-    def click_button(self):
-        verbose("button clicked")
+    def show_date(self, date: QDate):
+        ic(date)
+        isodate = date.toString(Qt.DateFormat.ISODate)
+        self.print_status(f"Date: {isodate}")
+        self.date_label.setText(f"_{isodate}")
+
+    def subdir_changed(self, i: int):
+        d = self.subdir.currentText()
+        verbose(f"subdir index={i} text={d}")
+
+    def enable_subdir_changed(self, state: Qt.CheckState):
+        enabled = Qt.CheckState(state) == Qt.CheckState.Checked
+        verbose(f"subdir {enabled=}")
+        self.subdir.setEnabled(enabled)
+        self.date_label.setEnabled(enabled)
+
+    def enable_target_changed(self, state: Qt.CheckState):
+        enabled = Qt.CheckState(state) == Qt.CheckState.Checked
+        verbose(f"target {enabled=}")
+        self.target.setEnabled(enabled)
+
+    def click_run_last(self):
+        verbose("run_last button clicked")
+
+    def click_run_ready(self):
+        verbose("run_ready button clicked")
 
 
     def open_file(self):
@@ -219,11 +280,7 @@ class MainWindow(QMainWindow):
     # Testing widgets
     def run_timer(self):
         ic("run_timer")
-        self.print_text("run_timer")
-
-    def show_date(self, date: QDate):
-        ic(date)
-        self.print_status(f"Date: {date.toString(Qt.DateFormat.ISODate)}")
+        # self.print_text("run_timer")
 
 
 
@@ -232,6 +289,7 @@ def main():
     verbose.enable()
 
     app = QApplication(sys.argv)
+    # app.setStyle("Fusion")
     window = MainWindow()
     window.show()
     app.exec()
